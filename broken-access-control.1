@@ -22,32 +22,27 @@ broken-access-control - script to test access control on a web app
 during a pentest
 .SH SYNOPSIS
 .TP
-broken-access-control [-h] [-c CONFIG] [\[en]login-path LOGIN_PATH] [\[en]id-field ID_FIELD]
-.IP
+broken-access-control [-h] [-c CONFIG] [\[en]login-path LOGIN_PATH] [\[en]id-field ID_FIELD]\[rs]
 .nf
 \f[C]
-               [--pwd-field PWD_FIELD] [--login-code LOGIN_CODE | --login-text LOGIN_TEXT] [--csrf]
+               [--pwd-field PWD_FIELD] [--login-code LOGIN_CODE | --login-text LOGIN_TEXT] [--csrf]\[rs]
 \f[R]
 .fi
-.IP
 .nf
 \f[C]
-               [--csrf-class CSRF_CLASS] [--csrf-name CSRF_NAME] [-o OUT] [-w WAIT]
+               [--csrf-class CSRF_CLASS] [--csrf-name CSRF_NAME] [-o OUT] [-w WAIT]\[rs]
 \f[R]
 .fi
-.IP
 .nf
 \f[C]
-               [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS] [-m MAX_RETRIES] [-p] [-v] [-j]
+               [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS] [-m MAX_RETRIES] [-p] [-v] [-j]\[rs]
 \f[R]
 .fi
-.IP
 .nf
 \f[C]
-               [--disable-unauth] [--disable-https]
+               [--disable-unauth] [--disable-https]\[rs]
 \f[R]
 .fi
-.IP
 .nf
 \f[C]
                [host] [users] [urls]
@@ -61,9 +56,6 @@ For the moment, this tool return only the HTTP status code of the
 response.
 Arguments can be specified from the command line or from a configuration
 file (see: FILES).
-.PD 0
-.P
-.PD
 .PP
 The script will first send a GET request to all the URLs in the given
 file without any authentication (unless \f[B]disable-unauth\f[R] is
@@ -76,20 +68,17 @@ To authenticate the script send a POST request to the page given in
 The payload is created with the \f[B]id-field\f[R] and
 \f[B]pwd-field\f[R] parameters and with the values parsed from the CSV
 file containing the users credentials (\f[B]users\f[R] parameters).
-.PD 0
-.P
-.PD
+.PP
 It\[cq]s possible to use a CSRF mechanism to connect as a classic user
 do.
 You must enable CSRF using with \f[B]csrf\f[R] parameter and then, you
 can give the type of HTML tag which contains the CSRF token with
 \f[B]csrf-class\f[R] and their name with \f[B]csrf-name\f[R].
-.PD 0
-.P
-.PD
 .PP
-\f[B]Example:\f[R] With default parameters (see: OPTIONS), the following
-request will be send for logging in:
+\f[B]Example:\f[R]
+.PP
+With default parameters (see: OPTIONS), the following request will be
+send for logging in:
 .IP
 .nf
 \f[C]
@@ -99,6 +88,10 @@ POST /login HTTP/1.1
 email=user1&password=password1
 \f[R]
 .fi
+.PP
+And then, by default the script detect a valid login attempt with a HTTP
+200 response, but you can change the status code, or detect a valid
+authentication with a string in the response text.
 .SH OPTIONS
 .TP
 -h, \[en]help
