@@ -15,7 +15,7 @@ class BrokenAccessControl():
     # Constants
     UNAUTHENTICATED = "Unauth. user"
     # Users CSV fields name
-    descField = "description"
+    descField = "role"
     userField = "username"
     pwdField  = "password"
 
@@ -69,6 +69,7 @@ class BrokenAccessControl():
             result[url] = dict()
         # Unauthenticated tests
         if not self.disable_unauth:
+            self.info("Testing %d URLs for user: unauthenticated" % len(urls))
             session = us.UserSession(self.host, disableHTTPS=self.disable_https, proxy=self.proxy)
             for url in urls:
                 r = session.get(url)
@@ -92,15 +93,14 @@ class BrokenAccessControl():
                 continue
             # Add sleep time to reduce request rate
             sleep(self.wait)
-            if session.isConnected:
-                for url in urls:
+            for url in urls:
+                r = session.get(url)
+                count = 0
+                while r.status_code == 502 and count < self.max_retries:
                     r = session.get(url)
-                    count = 0
-                    while r.status_code == 502 and count < self.max_retries:
-                        r = session.get(url)
-                        count += 1
-                        sleep(self.wait)
-                    result[url][user[self.descField]] = r.status_code
+                    count += 1
+                    sleep(self.wait)
+                result[url][user[self.descField]] = r.status_code
             sleep(self.wait * 3)
         return result
 
@@ -115,7 +115,9 @@ class BrokenAccessControl():
                 warn("Can't open given output file, write to stdout")
         # Save in JSON format
         if self.json:
-            dump(result, output)
+            dump(result, output, indent=4)
+            if output == sys.stdout:
+                print()
         # Save in human-readable format
         else:
             self.writeTable(result, output)
@@ -223,5 +225,5 @@ if __name__ == "__main__":
             argsDict.update(configArgs)
         except:
             log.error("Configuration file loading failed")
-    print(dumps(argsDict))
-    # BrokenAccessControl(argsDict).run()
+    # Init and run the test
+    BrokenAccessControl(argsDict).run()
