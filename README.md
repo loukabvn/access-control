@@ -1,5 +1,10 @@
 # access-control
-Tool for testing access control in web apps, useful during pentests.
+
+Tool for testing potentials broken access control vulnerabilities in web apps, useful during pentests.
+
+Connection to the app is fully parametrable, arguments can be passed in command line or in a configuration file (see: [template-config.json](./template-config.json)).
+
+You can use a proxy if needed to see all the requests sent by the tool and inspect precisely the response. By default it's `127.0.0.1:8080` (BurpSuite default proxy).
 
 ## Usage
 
@@ -39,7 +44,19 @@ $ broken-access-control.py "target.site.com" users.csv urls.txt --login-path "/l
 
 ## Options
 
-For more informations, see :
+Available options:
+```
+usage: broken-access-control [-h] [-c CONFIG] [--login-path LOGIN_PATH] [--id-field ID_FIELD]
+                             [--pwd-field PWD_FIELD]
+                             [--login-code LOGIN_CODE | --login-text LOGIN_TEXT] [--csrf]
+                             [--csrf-class CSRF_CLASS] [--csrf-name CSRF_NAME] [-o OUT]
+                             [-w WAIT] [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS]
+                             [-m MAX_RETRIES] [-p] [-v] [-j] [--disable-unauth]
+                             [--disable-https]
+                             [host] [users] [urls]
+```
+
+For more informations, see the `man` page:
 ```
 man ./broken-access-control.1
 ```
