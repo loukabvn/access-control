@@ -22,25 +22,25 @@ broken-access-control - script to test access control on a web app
 during a pentest
 .SH SYNOPSIS
 .TP
-broken-access-control [-h] [-c CONFIG] [\[en]login-path LOGIN_PATH] [\[en]id-field ID_FIELD]\[rs]
+broken-access-control [-h] [-c CONFIG] [\[en]login-path LOGIN_PATH] [\[en]id-field ID_FIELD]
 .nf
 \f[C]
-               [--pwd-field PWD_FIELD] [--login-code LOGIN_CODE | --login-text LOGIN_TEXT] [--csrf]\[rs]
+               [--pwd-field PWD_FIELD] [--login-code LOGIN_CODE | --login-text LOGIN_TEXT] [--csrf]
 \f[R]
 .fi
 .nf
 \f[C]
-               [--csrf-class CSRF_CLASS] [--csrf-name CSRF_NAME] [-o OUT] [-w WAIT]\[rs]
+               [--csrf-class CSRF_CLASS] [--csrf-name CSRF_NAME] [-o OUT] [-w WAIT]
 \f[R]
 .fi
 .nf
 \f[C]
-               [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS] [-m MAX_RETRIES] [-p] [-v] [-j]\[rs]
+               [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS] [-m MAX_RETRIES] [-t TIMEOUT] [-p] [-v] [-j]
 \f[R]
 .fi
 .nf
 \f[C]
-               [--disable-unauth] [--disable-https]\[rs]
+               [--allow-redirect] [--disable-unauth] [--disable-https]
 \f[R]
 .fi
 .nf
@@ -92,6 +92,9 @@ email=user1&password=password1
 And then, by default the script detect a valid login attempt with a HTTP
 200 response, but you can change the status code, or detect a valid
 authentication with a string in the response text.
+By default, the tool does not follow redirections, for example, to
+detect a valid authentication upon a 302 status code in HTTP response,
+but you can enable the redirection.
 .SH OPTIONS
 .TP
 -h, \[en]help
@@ -150,6 +153,9 @@ set the limit of users to test
 \[en]limit-urls LIMIT_URLS
 set the limit of URLs to test
 .TP
+-t TIMEOUT, \[en]timeout TIMEOUT
+timeout for each HTTP request (default: 5)
+.TP
 -m MAX_RETRIES, \[en]max-retries MAX_RETRIES
 max retries attempts if request failed (default: 3)
 .TP
@@ -161,6 +167,9 @@ see debug messages (default: False)
 .TP
 -j, \[en]json
 save results in JSON format (default: False)
+.TP
+\[en]allow-redirect
+follow requests redirection (default: False)
 .TP
 \[en]disable-unauth
 disable unauthenticated tests (default: False)

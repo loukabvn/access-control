@@ -67,40 +67,42 @@ class BrokenAccessControl():
         result = dict()
         for url in urls:
             result[url] = dict()
-        # Unauthenticated tests
+        # Add unauthenticated user if needed
         if not self.disable_unauth:
-            self.info("Testing %d URLs for user: unauthenticated" % len(urls))
-            session = us.UserSession(self.host, disableHTTPS=self.disable_https, proxy=self.proxy)
-            for url in urls:
-                r = session.get(url)
-                result[url][self.UNAUTHENTICATED] = r.status_code
-            sleep(self.wait * 3)
-        # Authenticated tests
+            users = [{
+                self.descField: self.UNAUTHENTICATED,
+                self.userField: None,
+                self.pwdField: None
+            }] + users
+        # Send all requests for each users
         for user in users:
-            self.info("Testing %d URLs for user: %s" % (len(urls), user[self.userField]))
+            self.info("Testing %d URLs for user: %s, role: %s" % (len(urls), user[self.userField], user[self.descField]))
             session = us.UserSession(self.host,
                 self.login_path, self.id_field, self.pwd_field,
                 self.login_code, (self.login_text is not None), self.login_text,
                 self.csrf, self.csrf_name, self.csrf_class,
-                self.disable_https, proxy=self.proxy)
-            try:
+                self.disable_https, self.allow_redirect, self.timeout, self.proxy)
+            # Try to login
+            if user[self.descField] is not self.UNAUTHENTICATED:
                 session.login(user[self.userField], user[self.pwdField])
-            except:
-                pass
-            # Test if connection suceed
-            if not session.isConnected:
-                self.warn("Skipping user %s: can't log in" % user[self.userField])
-                continue
+                # Test if connection suceed
+                if not session.isConnected:
+                    self.warn("Skipping user %s: can't log in" % user[self.userField])
+                    continue
             # Add sleep time to reduce request rate
             sleep(self.wait)
             for url in urls:
-                r = session.get(url)
-                count = 0
-                while r.status_code == 502 and count < self.max_retries:
+                try:
                     r = session.get(url)
-                    count += 1
-                    sleep(self.wait)
-                result[url][user[self.descField]] = r.status_code
+                    count = 0
+                    while r.status_code == 502 and count < self.max_retries:
+                        r = session.get(url)
+                        count += 1
+                        sleep(self.wait)
+                    result[url][user[self.descField]] = r.status_code
+                # request timeout
+                except requests.exceptions.Timeout:
+                    result[url][user[self.descField]] = "Timeout"
             sleep(self.wait * 3)
         return result
 
@@ -165,11 +167,7 @@ class BrokenAccessControl():
             urls = urls[:self.limit_urls]
         # Start test
         result = self.testAll(users, urls)
-        if len(result) > 0:
-            # Save results
-            self.save(result)
-        else:
-            self.warn("Test failed, no data returned")
+        self.save(result)
         # Finished
         self.info("Done")
 
@@ -210,10 +208,12 @@ if __name__ == "__main__":
     options.add_argument("-w", "--wait",  type=int, help="waiting time to limit requests rate, in seconds", default=1)
     options.add_argument("--limit-users", type=int, help="set the limit of users to test")
     options.add_argument("--limit-urls",  type=int, help="set the limit of URLs to test")
+    options.add_argument("-t", "--timeout", type=int, help="timeout for each HTTP request", default=5)
     options.add_argument("-m", "--max-retries", type=int, help="max retries attempts if request failed", default=3)
     options.add_argument("-p", "--proxy",    action="store_true", help="enable use of proxy, for the moment: 127.0.0.1:8080")
     options.add_argument("-v", "--verbose",  action="store_true", help="see debug messages")
     options.add_argument("-j", "--json",     action="store_true", help="save results in JSON format")
+    options.add_argument("--allow-redirect", action="store_true", help="follow requests redirection")
     options.add_argument("--disable-unauth", action="store_true", help="disable unauthenticated tests")
     options.add_argument("--disable-https",  action="store_true", help="disable HTTPS")
     # Parse and call main
@@ -226,4 +226,5 @@ if __name__ == "__main__":
         except:
             log.error("Configuration file loading failed")
     # Init and run the test
+    print(dumps(argsDict))
     BrokenAccessControl(argsDict).run()

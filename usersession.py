@@ -4,7 +4,9 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from bs4 import BeautifulSoup
 
-# General user session class
+"""
+Generic user session class
+"""
 class UserSession:
 
     HTTP  = "http://"
@@ -14,7 +16,7 @@ class UserSession:
             self, host, loginPath="/login", idField='email', pwdField='password',
             validLoginStatusCode=200, validLoginByText=False, validLoginText=None,
             csrfToken=False, csrfTokenName="csrf", csrfTokenClass="input",
-            disableHTTPS=False, proxy=None
+            disableHTTPS=False, allowRedirect=True, timeout=5, proxy=None
         ):
         # Host parameters
         self.protocol = self.HTTP if disableHTTPS else self.HTTPS
@@ -30,6 +32,8 @@ class UserSession:
         if csrfToken:
             self.csrfTokenName = csrfTokenName
             self.csrfTokenClass = csrfTokenClass
+        self.allowRedirect = allowRedirect
+        self.timeout = timeout
         # Session informations
         self.session = requests.Session()
         self.isConnected = False
@@ -40,18 +44,20 @@ class UserSession:
 
     def get(self, path):
         url = self.protocol + self.host + path
-        if self.proxy is not None:
-            r = self.session.get(url, proxies=self.proxy, verify=False)
-        else:
-            r = self.session.get(url)
+        r = self.session.get(
+            url,
+            allow_redirects=self.allowRedirect, timeout=self.timeout,
+            proxies=self.proxy, verify=(self.proxy is not None)
+        )
         return r
 
     def post(self, path, payload):
         url = self.protocol + self.host + path
-        if self.proxy is not None:
-            r = self.session.post(url, data=payload, proxies=self.proxy, verify=False)
-        else:
-            r = self.session.post(url, data=payload)
+        r = self.session.post(
+            url, data=payload,
+            allow_redirects=self.allowRedirect, timeout=self.timeout,
+            proxies=self.proxy, verify=(self.proxy is not None)
+        )
         return r
     
     def getCSRFToken(self):

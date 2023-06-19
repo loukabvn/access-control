@@ -14,10 +14,12 @@
   "wait": 1,
   "limit_users": null,
   "limit_urls": null,
+  "timeout": 5,
   "max_retries": 3,
   "proxy": false,
   "verbose": false,
   "json": false,
+  "allow_redirect": false,
   "disable_unauth": false,
   "disable_https": false
 }
