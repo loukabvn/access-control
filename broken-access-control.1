@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "BROKEN-ACCESS-CONTROL" "1" "12 Jun 2023" "v1.0" "Tool for testing access control - documentation"
+.TH "BROKEN-ACCESS-CONTROL" "1" "20 Jun 2023" "v1.0" "Tool for testing access control - documentation"
 .hy
 .SH NAME
 .PP
@@ -35,7 +35,7 @@ broken-access-control [-h] [-c CONFIG] [\[en]login-path LOGIN_PATH] [\[en]id-fie
 .fi
 .nf
 \f[C]
-               [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS] [-m MAX_RETRIES] [-t TIMEOUT] [-p] [-v] [-j]
+               [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS] [-m MAX_RETRIES] [-t TIMEOUT] [-p] [-v] [-d] [-j]
 \f[R]
 .fi
 .nf
@@ -163,6 +163,9 @@ max retries attempts if request failed (default: 3)
 enable use of proxy, for the moment: 127.0.0.1:8080 (default: False)
 .TP
 -v, \[en]verbose
+see info and warning messages (default: False)
+.TP
+-d, \[en]debug
 see debug messages (default: False)
 .TP
 -j, \[en]json
@@ -212,10 +215,13 @@ Here is an example of this file :
   \[dq]wait\[dq]: 1,
   \[dq]limit_users\[dq]: null,
   \[dq]limit_urls\[dq]: null,
+  \[dq]timeout\[dq]: 5,
   \[dq]max_retries\[dq]: 3,
   \[dq]proxy\[dq]: false,
   \[dq]verbose\[dq]: false,
+  \[dq]debug\[dq]: false,
   \[dq]json\[dq]: false,
+  \[dq]allow_redirect\[dq]: false,
   \[dq]disable_unauth\[dq]: false,
   \[dq]disable_https\[dq]: false
 }

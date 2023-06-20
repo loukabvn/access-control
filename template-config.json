@@ -18,6 +18,7 @@
   "max_retries": 3,
   "proxy": false,
   "verbose": false,
+  "debug": false,
   "json": false,
   "allow_redirect": false,
   "disable_unauth": false,

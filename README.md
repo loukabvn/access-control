@@ -48,8 +48,8 @@ Available options:
 ```
 usage:  broken-access-control [-h] [-c CONFIG] [--login-path LOGIN_PATH] [--id-field ID_FIELD] [--pwd-field PWD_FIELD]
                               [--login-code LOGIN_CODE | --login-text LOGIN_TEXT] [--csrf] [--csrf-class CSRF_CLASS] [--csrf-name CSRF_NAME]
-                              [-o OUT] [-w WAIT] [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS] [-t TIMEOUT] [-m MAX_RETRIES] [-p] [-v]
-                              [-j] [--allow-redirect] [--disable-unauth] [--disable-https]
+                              [-o OUT] [-w WAIT] [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS] [-t TIMEOUT] [-m MAX_RETRIES] [-p] [-v] [-d] [-j]
+                              [--allow-redirect] [--disable-unauth] [--disable-https]
                               [host] [users] [urls]
 ```
 

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from urllib.parse import urlparse
-from pwn import log
+from pwn import log, context
 from json import dump, load, dumps
 from csv import DictReader
 from time import sleep
@@ -9,7 +9,6 @@ from time import sleep
 import sys
 import argparse
 import usersession as us
-
 
 class BrokenAccessControl():
     # Constants
@@ -27,16 +26,6 @@ class BrokenAccessControl():
             "https": "127.0.0.1:8080"
         }
         self.proxy = DEFAULT_PROXY if self.proxy else None
-
-    # Log functions
-    def info(self, msg):
-        if self.verbose: log.info(msg)
-
-    def warn(self, msg):
-        if self.verbose: log.warn(msg)
-
-    def error(self, msg):
-        if self.verbose: log.error(msg)
 
     # open and extract content of URLs file
     def loadURLs(self):
@@ -76,7 +65,7 @@ class BrokenAccessControl():
             }] + users
         # Send all requests for each users
         for user in users:
-            self.info("Testing %d URLs for user: %s, role: %s" % (len(urls), user[self.userField], user[self.descField]))
+            log.info("Testing %d URLs for user: %s, role: %s" % (len(urls), user[self.userField], user[self.descField]))
             session = us.UserSession(self.host,
                 self.login_path, self.id_field, self.pwd_field,
                 self.login_code, (self.login_text is not None), self.login_text,
@@ -87,7 +76,7 @@ class BrokenAccessControl():
                 session.login(user[self.userField], user[self.pwdField])
                 # Test if connection suceed
                 if not session.isConnected:
-                    self.warn("Skipping user %s: can't log in" % user[self.userField])
+                    log.warn("Skipping user %s: can't log in" % user[self.userField])
                     continue
             # Add sleep time to reduce request rate
             sleep(self.wait)
@@ -96,12 +85,14 @@ class BrokenAccessControl():
                     r = session.get(url)
                     count = 0
                     while r.status_code == 502 and count < self.max_retries:
+                        log.debug(f"Got 502 when trying to access {url}, retrying")
                         r = session.get(url)
                         count += 1
                         sleep(self.wait)
                     result[url][user[self.descField]] = r.status_code
                 # request timeout
                 except requests.exceptions.Timeout:
+                    log.debug(f"Request to {url} timeout")
                     result[url][user[self.descField]] = "Timeout"
             sleep(self.wait * 3)
         return result
@@ -114,7 +105,7 @@ class BrokenAccessControl():
             try:
                 output = open(self.out, 'w')
             except:
-                warn("Can't open given output file, write to stdout")
+                log.warn("Can't open given output file, write to stdout")
         # Save in JSON format
         if self.json:
             dump(result, output, indent=4)
@@ -145,21 +136,21 @@ class BrokenAccessControl():
     # Run the broken access control test
     def run(self):
         # Host informations
-        self.info(f"Host: {self.host}")
+        log.info(f"Host: {self.host}")
         # Proxy informations
         if self.proxy is not None:
-            self.info("HTTP proxy is  : %s" % self.proxy['http'])
-            self.info("HTTPS proxy is : %s" % self.proxy['https'])
+            log.info("HTTP proxy is  : %s" % self.proxy['http'])
+            log.info("HTTPS proxy is : %s" % self.proxy['https'])
         try:
             # Load users
-            self.info(f"Load users file: {self.users}")
+            log.info(f"Load users file: {self.users}")
             users = self.loadUsers()
             # Load URLs
-            self.info(f"Load target URLs file: {self.urls}")
-            self.warn("WARNING: ensure /logout or equivalent is not in URLs or at the end of the list")
+            log.info(f"Load target URLs file: {self.urls}")
+            log.warn("WARNING: ensure /logout or equivalent is not in URLs or at the end of the list")
             urls  = self.loadURLs()
         except:
-            self.error("Can't load or open users or URLs file")
+            log.error("Can't load or open users or URLs file")
         # Limits the numbers of users and URLs to test if asked (debug)
         if self.limit_users is not None:
             users = users[:self.limit_users]
@@ -169,7 +160,7 @@ class BrokenAccessControl():
         result = self.testAll(users, urls)
         self.save(result)
         # Finished
-        self.info("Done")
+        log.info("Done")
 
 
 # Entry point
@@ -211,12 +202,17 @@ if __name__ == "__main__":
     options.add_argument("-t", "--timeout", type=int, help="timeout for each HTTP request", default=5)
     options.add_argument("-m", "--max-retries", type=int, help="max retries attempts if request failed", default=3)
     options.add_argument("-p", "--proxy",    action="store_true", help="enable use of proxy, for the moment: 127.0.0.1:8080")
-    options.add_argument("-v", "--verbose",  action="store_true", help="see debug messages")
+    options.add_argument("-v", "--verbose",  action="store_true", help="see info and warning messages")
+    options.add_argument("-d", "--debug",    action="store_true", help="see debug messages")
     options.add_argument("-j", "--json",     action="store_true", help="save results in JSON format")
     options.add_argument("--allow-redirect", action="store_true", help="follow requests redirection")
     options.add_argument("--disable-unauth", action="store_true", help="disable unauthenticated tests")
     options.add_argument("--disable-https",  action="store_true", help="disable HTTPS")
-    # Parse and call main
+    # If no arguments are provided, show help
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+    # Parse arguments
     args = parser.parse_args()
     argsDict = vars(args)
     if args.config is not None:
@@ -225,6 +221,14 @@ if __name__ == "__main__":
             argsDict.update(configArgs)
         except:
             log.error("Configuration file loading failed")
-    # Init and run the test
-    print(dumps(argsDict))
-    BrokenAccessControl(argsDict).run()
+    # Set verbosity level
+    context.log_level = "debug" if argsDict["debug"] else ("info" if argsDict["verbose"] else "error")
+    # Show args dict if debugging is enable
+    log.debug(f"Arguments: {dumps(argsDict)}")
+    # Check required arguments
+    if args.config or (args.host and args.users and args.urls):
+        # Init and run the test
+        BrokenAccessControl(argsDict).run()
+    else:
+        log.error("Arguments host, users, and urls are required if no configuration file are provided")
+        sys.exit(1)
