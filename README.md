@@ -2,7 +2,7 @@
 
 Tool for testing potentials broken access control vulnerabilities in web apps, useful during pentests.
 
-Connection to the app is fully parametrable, arguments can be passed in command line or in a configuration file (see: [template-config.json](./template-config.json)).
+Connection to the app is fully parametrable, arguments can be passed in command line or in a configuration file (see: [template-config.json](./examples/template-config.json)).
 
 You can use a proxy if needed to see all the requests sent by the tool and inspect precisely the response. By default it's `127.0.0.1:8080` (BurpSuite default proxy).
 
@@ -10,7 +10,7 @@ You can use a proxy if needed to see all the requests sent by the tool and inspe
 
 Example :
 ```
-$ broken-access-control.py "target.site.com" users.csv urls.txt --login-path "/login.php" --login-code 302 -v --json
+$ python3 main.py "target.site.com" users.csv urls.txt --login-path "/login.php" --login-code 302 -v --json
 [*] Host: target.site.com
 [*] Load users file: users.csv
 [*] Load target URLs file: urls.txt
@@ -46,20 +46,20 @@ $ broken-access-control.py "target.site.com" users.csv urls.txt --login-path "/l
 
 Available options:
 ```
-usage:  broken-access-control [-h] [-c CONFIG] [--login-path LOGIN_PATH] [--id-field ID_FIELD] [--pwd-field PWD_FIELD]
-                              [--login-code LOGIN_CODE | --login-text LOGIN_TEXT] [--csrf] [--csrf-class CSRF_CLASS] [--csrf-name CSRF_NAME]
-                              [-o OUT] [-w WAIT] [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS] [-t TIMEOUT] [-m MAX_RETRIES] [-p] [-v] [-d] [-j]
-                              [--allow-redirect] [--disable-unauth] [--disable-https]
-                              [host] [users] [urls]
+usage:  accesscontrol [-h] [-c CONFIG] [--login-path LOGIN_PATH] [--id-field ID_FIELD] [--pwd-field PWD_FIELD]
+                      [--login-code LOGIN_CODE | --login-text LOGIN_TEXT] [--csrf] [--csrf-class CSRF_CLASS] [--csrf-name CSRF_NAME]
+                      [-o OUT] [-w WAIT] [--limit-users LIMIT_USERS] [--limit-urls LIMIT_URLS] [-t TIMEOUT] [-m MAX_RETRIES] [-p] [-v] [-d] [-j]
+                      [--allow-redirect] [--disable-unauth] [--disable-https]
+                      [host] [users] [urls]
 ```
 
 For more informations, see the `man` page:
 ```
-man ./broken-access-control.1
+man docs/accesscontrol.1
 ```
 
 You can add it to your man pages with:
 ```
-gzip broken-access-control.1
-sudo mv ./broken-access-control.1.gz /usr/share/man/man1/
+gzip docs/accesscontrol.1
+sudo mv docs/accesscontrol.1.gz /usr/share/man/man1/
 ```
