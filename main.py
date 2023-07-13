@@ -5,9 +5,7 @@ import argparse
 import logging
 
 from json import load, dumps
-
-sys.path.append("./src")
-from accesscontrol import AccessControl
+from source.accesscontrol import AccessControl
 
 def main():
     # Parsing command line
